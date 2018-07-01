@@ -146,54 +146,40 @@ ISO-TP has to be installed on the PI (see above). Connect to the PI via ssh and 
 
 The lua config files go into the folder which is specified in `src/config.h` (by default this is `lua_config`). If you change the lua scripts you will have to restart the whole server.
 
-Build the server with `make`. To start the server, execute one of the binarys in `dist` from the main directory of the repository. The first, and only, command line parameter specifies the device (vcan0 be default). E.g:
+Build the server with `make`. 
+
+Create a directory named `lua_config` in the directory `dist/Debug/GNU-Linux/`. Copy the file `example.lua` from the directory `example luas` into the `lua_config` directory.
+
+To start the server, execute one of the binarys in `dist` from the main directory of the repository. The first, and only, command line parameter specifies the device (vcan0 be default). E.g:
 ```
 dist/Debug/GNU-Linux/amos-ss17-proj4 can0
 ```
 
 To modify the build system best open the project in Netbeans (see above).
 
-## Set-Up on Virtual Machine
-If the simulator should be installed on a virtual linux machine just do the following steps to get the simulator running.
+##Set-Up to load the modules automatically
 
-ISO-TP
+If the CAN connection should be started while your system is starting, do the following steps.
 
-As like in the Set-Up for the Raspberry PI, ISO-TP should be installed. If the CAN connection should be started while your system is starting, do the following steps.
+1. Go to the directory `/etc` in the root directory of the system
 
-1. Load the can modules into the `modules.conf` file. This file can be found in your systems root directory via this path `/etc/modules-load.d`
-
-2. Open the file with the command `sudo nano modules.conf`
+2. Open the file`modules` 
 
 3. Insert 
 ```
 vcan
 isotp
 ```
-Leave the nano terminal with `ctrl + x`, save with `j` and enter. Now open the file and check if the file was modified.
 
-4. Next open the file `rc.local` in the root directory with `sudo nano /etc/rc.local`
+4. Next open the file `rc.local` in the root directory
 
 5. Insert
 ```
 sudo ip link add dev vcan0 type vcan
 sudo ip link set up vcan0
 ```
-Leave the nano terminal like in step 3.
 
 6. Now restart the system.
-
-Build and Start the Server
-
-Build the server with `make` in the main directory. 
-
-Create a directory named `lua_config` in the directory `dist/Debug/GNU-Linux/`. Copy the file `example.lua` from the directory `example luas` into the `lua_config` directory.
-
-To start the server, execute the binary in the directory `dist/Debug/GNU-Linux/`. The first, and only, command line parameter specifies the device (vcan0 be default). E.g:
-```
-sudo ./amos-ss17-proj4 vcan0
-```
-
-To modify the build system best open the project in Netbeans (see above).
 
 
 
