@@ -5,8 +5,12 @@
  */
 
 #include "ecu_lua_script.h"
+#include "crcccitt.c"
 #include "utilities.h"
 #include <iostream>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <algorithm>
 #include <stdexcept>
 #include <unistd.h>
@@ -20,6 +24,7 @@ static constexpr char HEX_LUT[] = "0123456789ABCDEF";
 /// Defines the maximum size of an UDS message in bytes.
 static constexpr int MAX_UDS_SIZE = 4096;
 
+static string receivedDataBytes = "";
 /**
  * Constructor. Loads a Lua script and injects common used functions.
  *
@@ -32,6 +37,9 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
     {
         // inject the C++ functions into the Lua script
         lua_state_["ascii"] = &ascii;
+        lua_state_["getCounterByte"] = &getCounterByte;
+        lua_state_["getDataBytes"] = &getDataBytes;
+        lua_state_["createHash"] = &createHash;
         lua_state_["toByteResponse"] = &toByteResponse;
         lua_state_["sleep"] = &sleep;
         // some lambda magic for the member functions 
@@ -207,7 +215,7 @@ string EcuLuaScript::getSeed(uint8_t seed_level) const
  * @param hexString: the literal hex string (e.g. "41 6f 54")
  * @return a vector with the byte values
  */
-vector<uint8_t> EcuLuaScript::literalHexStrToBytes(const string& hexString) const
+vector<uint8_t> EcuLuaScript::literalHexStrToBytes(const string& hexString)
 {
     // make a working copy
     string tmpStr = hexString;
@@ -263,6 +271,50 @@ string EcuLuaScript::ascii(const string& utf8_str) noexcept
     }
     output.push_back(' ');
     return output;
+}
+/**
+*Substrings the counter value of the message which is the second byte
+**/
+string EcuLuaScript::getCounterByte(const string& msg) noexcept
+{
+    // make a working copy
+    string tmpStr = msg;
+    // remove white spaces from string
+    tmpStr.erase(remove(tmpStr.begin(), tmpStr.end(), ' '), tmpStr.end());
+    string answer = tmpStr;
+    answer = answer.substr(2,2);
+    return answer;
+}
+/**
+*Substrings the data bytes value of the message which is the second byte
+**/
+void EcuLuaScript::getDataBytes(const string& msg) noexcept
+{
+    // make a working copy
+    string tmpStr = msg;
+    // remove white spaces from string
+    tmpStr.erase(remove(tmpStr.begin(), tmpStr.end(), ' '), tmpStr.end());
+    string answer = tmpStr;
+    //cut the first two bytes which indicate the request 
+    answer = answer.substr(4,answer.length());
+    //save the answer in global var, which is also available for createHash()
+    receivedDataBytes = receivedDataBytes + answer;
+}
+
+string EcuLuaScript::createHash() noexcept
+{
+    vector <uint8_t> resp = literalHexStrToBytes(receivedDataBytes);
+    uint16_t crc2 = crc_ccitt_ffff(resp.data(), resp.size());
+    char hash[5];
+    snprintf(hash, 5, "%X", crc2);
+    string answer(hash);
+    if(answer.length() % 2 != 0){
+        answer = "0" + answer;
+    }
+    //reset the received Data variable
+    receivedDataBytes = "";
+    cout << answer << endl;
+    return answer;
 }
 
 /**
@@ -385,11 +437,23 @@ void EcuLuaScript::switchToSession(int ses)
 bool EcuLuaScript::hasRaw(const string& identStr) const
 {
     auto val = lua_state_[ecu_ident_.c_str()][RAW_TABLE][identStr.c_str()];
+    if(val.exists()==false){
+        string identStrWorking = " ";
+        //offset for the first byte
+        int counter = 2;
+        while(val.exists() == false && identStrWorking.length() < identStr.length()){
+            //appends wildcard sign after the bytes that are tested
+            identStrWorking = identStr.substr(0,counter).append(" *");
+            val = lua_state_[ecu_ident_.c_str()][RAW_TABLE][identStrWorking.c_str()];
+            //counter + blank + bytelength
+            counter = counter + 3;
+        }
+    }
     return val.exists();
 }
 
 /**
- * Gets the raw data entries form the Lua "Raw"-Table.
+ * Gets the raw data entries from the Lua "Raw"-Table.
  * The identifiers of the corresponding entries are literal hex byte strings
  * (e.g. "12 FF 00"). The entries are either strings or functions that need
  * to be called, with the identifier string as the default parameter.
@@ -398,17 +462,42 @@ bool EcuLuaScript::hasRaw(const string& identStr) const
  * @return the raw data as literal hex byte string or an empty string on error
  */
 string EcuLuaScript::getRaw(const string& identStr) const
-{
+{ 
     auto val = lua_state_[ecu_ident_.c_str()][RAW_TABLE][identStr.c_str()];
-    if (val.isFunction())
-    {
-        return val(identStr);
+    if(val.exists() == true){
+        
+        if (val.isFunction())
+        {
+            return val(identStr);
+        }
+        else
+        {
+            return val; // will be cast into string
+        } 
+    }else{
+        string identStrWorking = " ";
+        //offset for the first byte
+        int counter = 2;
+        while(val.exists() == false && identStrWorking.length() < identStr.length()){
+            //appends wildcard sign after the bytes that are tested
+            identStrWorking = identStr.substr(0,counter).append(" *");
+            val = lua_state_[ecu_ident_.c_str()][RAW_TABLE][identStrWorking.c_str()];
+            //counter + blank + bytelength
+            counter = counter + 3;
+        }
+        if (val.isFunction())
+        {
+            //call the function with the originally given argument
+            return val(identStr);
+        }
+        else
+        {
+            return val; // will be cast into string
+        } 
     }
-    else
-    {
-        return val; // will be cast into string
-    }
+    
 }
+
 
 /**
  * Sets the SessionController required for session handling.
@@ -424,3 +513,4 @@ void EcuLuaScript::registerIsoTpSender(IsoTpSender* pSender) noexcept
 {
     pIsoTpSender_ = pSender;
 }
+

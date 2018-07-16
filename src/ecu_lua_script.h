@@ -40,9 +40,12 @@ public:
     std::string getDataByIdentifier(const std::string& identifier, const std::string& session) const;
     std::string getRaw(const std::string& identStr) const;
     bool hasRaw(const std::string& identStr) const;
-    std::vector<std::uint8_t> literalHexStrToBytes(const std::string& hexString) const;
+    static std::vector<std::uint8_t> literalHexStrToBytes(const std::string& hexString);
 
     static std::string ascii(const std::string& utf8_str) noexcept;
+    static std::string getCounterByte(const std::string& msg) noexcept;
+    static void getDataBytes(const std::string& msg) noexcept;
+    static std::string createHash() noexcept;
     static std::string toByteResponse(std::uint32_t value, std::uint32_t len = sizeof(std::uint32_t)) noexcept;
     static void sleep(unsigned int ms) noexcept;
     void sendRaw(const std::string& response) const;
@@ -53,7 +56,7 @@ public:
     void registerIsoTpSender(IsoTpSender* pSender) noexcept;
 
 private:
-    sel::State lua_state_;
+    sel::State lua_state_{true};
     std::string ecu_ident_;
     SessionController* pSessionCtrl_ = nullptr;
     IsoTpSender* pIsoTpSender_ = nullptr;
