@@ -66,6 +66,10 @@ Otherwise, if there is an error and make mumbles something about `error: to few 
 
 3. Install the modules with `sudo make modules_install`.
 
+4. Use this command only once after the installation `sudo depmod`
+
+
+
 After these steps, the usage of ISO-TP should be possible. In case the application prints an error like `Protocol not supported`, there went something wrong with the installation. See [can-isotp README](https://github.com/hartkopp/can-isotp) for further instructions and troubleshooting.
 
 
@@ -142,9 +146,43 @@ ISO-TP has to be installed on the PI (see above). Connect to the PI via ssh and 
 
 The lua config files go into the folder which is specified in `src/config.h` (by default this is `lua_config`). If you change the lua scripts you will have to restart the whole server.
 
-Build the server with `make`. To start the server, execute one of the binarys in `dist` from the main directory of the repository. The first, and only, command line parameter specifies the device (vcan0 be default). E.g:
+Build the server with `make`. 
+
+Create a directory named `lua_config` in the directory `dist/Debug/GNU-Linux/`. Copy the file `example.lua` from the directory `example luas` into the `lua_config` directory.
+
+To start the server, execute one of the binarys in `dist` from the main directory of the repository. The first, and only, command line parameter specifies the device (vcan0 be default). E.g:
 ```
 dist/Debug/GNU-Linux/amos-ss17-proj4 can0
 ```
 
 To modify the build system best open the project in Netbeans (see above).
+
+##Set-Up to load the modules automatically
+
+If the CAN connection should be started while your system is starting, do the following steps.
+
+1. Go to the directory `/etc` in the root directory of the system
+
+2. Open the file`modules` 
+
+3. Insert 
+```
+vcan
+isotp
+```
+
+4. Next open the file `rc.local` in the root directory
+
+5. Insert
+```
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+```
+
+6. Now restart the system.
+
+
+
+
+
+
