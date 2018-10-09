@@ -30,7 +30,7 @@ install:
     - $CXX --version
     - g++ --version
 
-    - sudo apt-get install canutils
+    - sudo apt-get install can-utils
       #    # install can-utils
       #    - cd
       #    - git clone https://github.com/linux-can/can-utils
