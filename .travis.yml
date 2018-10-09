@@ -12,6 +12,7 @@ before_install:
 
     # add toolchain repository (for g++ update)
     - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+    - sudo apt-add-repository multiverse
     - sudo apt-get update -qq
 
 install:
