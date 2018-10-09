@@ -15,6 +15,7 @@ before_install:
     - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
       #- sudo add-apt-repository universe
     - cat /etc/apt/sources.list
+    - cat /etc/apt/sources.list.d/*
     - sudo apt-get update -qq
 
 install:
