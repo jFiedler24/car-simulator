@@ -1,7 +1,7 @@
 language: cpp
 
-# use ubuntu 14.04 instead of the default 12.04
-dist: trusty
+# use ubuntu 18.04 bionic beaver
+dist: bionic
 
 compiler:
     - g++
