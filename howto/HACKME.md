@@ -64,6 +64,9 @@ Otherwise, if there is an error and make mumbles something about `error: to few 
 * Go to line 1112 and edit `if LINIX_VERSION_CODE >= KERNEL_VERSION(4,9,11)` into something that matches your current Kernel version e.g. `if LINIX_VERSION_CODE >= KERNEL_VERSION(4,4,0)` (type `uname -r` in the bash to show your version).
 * Save the changes and try again.
 
+- > if you struggle with finding linux header for your raspberry pi use this command:
+`sudo apt-get install raspberrypi-kernel-headers`
+
 3. Install the modules with `sudo make modules_install`.
 
 4. Use this command only once after the installation `sudo depmod`
