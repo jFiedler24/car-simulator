@@ -69,7 +69,12 @@ Otherwise, if there is an error and make mumbles something about `error: to few 
 
 3. Install the modules with `sudo make modules_install`.
 
-4. Use this command only once after the installation `sudo depmod`
+4. When the PF_CAN core module is loaded ('modprobe can') the ISO-TP module
+   can be loaded into the kernel with
+
+       insmod ./net/can/can-isotp.ko
+
+5. Use this command only once after the installation `sudo depmod`
 
 
 
