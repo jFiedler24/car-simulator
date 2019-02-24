@@ -33,7 +33,7 @@ install:
     - $CXX --version
     - g++ --version
 
-    - sudo apt-get install can-utils
+#    - sudo apt-get install can-utils
       #    # install can-utils
       #    - cd
       #    - git clone https://github.com/linux-can/can-utils
@@ -43,16 +43,16 @@ install:
       #    - make
       #    - sudo make install
 
-    # setup vcan
-    - sudo modprobe vcan
-    - sudo ip link add dev vcan0 type vcan
-    - sudo ip link set up vcan0
+#    # setup vcan
+#    - sudo modprobe vcan
+#    - sudo ip link add dev vcan0 type vcan
+#    - sudo ip link set up vcan0
 
-    # test vcan
-    - ip link
-    - candump vcan0 &
-    - cansend vcan0 123#1122334455667788
-    - killall candump
+#    # test vcan
+#    - ip link
+#    - candump vcan0 &
+#    - cansend vcan0 123#1122334455667788
+#    - killall candump
 
       #    # install isotp
       #    - cd
@@ -64,10 +64,10 @@ install:
       #    - sudo make modules_install
       #    - sudo insmod ./net/can/can-isotp.ko
 
-    # test isotp
-    - isotprecv -s 123 -d 321 -l vcan0 &
-    - echo 11 22 33 44 55 66 DE AD BE EF | isotpsend -s 321 -d 123 vcan0
-    - killall isotprecv
+#    # test isotp
+#    - isotprecv -s 123 -d 321 -l vcan0 &
+#    - echo 11 22 33 44 55 66 DE AD BE EF | isotpsend -s 321 -d 123 vcan0
+#    - killall isotprecv
 
 before_script:
     - cd $PROJECT_DIR
