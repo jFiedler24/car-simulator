@@ -34,7 +34,7 @@ install:
     - $CXX --version
     - g++ --version
 
-#    - sudo apt-get install can-utils
+    - sudo apt-get install can-utils
       #    # install can-utils
       #    - cd
       #    - git clone https://github.com/linux-can/can-utils
@@ -55,15 +55,15 @@ install:
 #    - cansend vcan0 123#1122334455667788
 #    - killall candump
 
-      #    # install isotp
-      #    - cd
-      #    - git clone https://github.com/hartkopp/can-isotp
-      #    - cd can-isotp
-      #    - git apply $PROJECT_DIR/resources/0001-Kernel-version-patch-for-ISO-TP.patch
-      #    - sudo apt-get install build-essential linux-headers-$(uname -r)
-      #    - make
-      #    - sudo make modules_install
-      #    - sudo insmod ./net/can/can-isotp.ko
+    # install isotp
+    - cd
+    - git clone https://github.com/hartkopp/can-isotp
+    - cd can-isotp
+#    - git apply $PROJECT_DIR/resources/0001-Kernel-version-patch-for-ISO-TP.patch
+    - sudo apt-get install linux-headers-$(uname -r)
+    - make
+    - sudo make modules_install
+#    - sudo insmod ./net/can/can-isotp.ko
 
 #    # test isotp
 #    - isotprecv -s 123 -d 321 -l vcan0 &
@@ -76,3 +76,4 @@ before_script:
 script:
     - make
     - make test
+
