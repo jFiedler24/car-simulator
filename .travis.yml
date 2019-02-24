@@ -18,6 +18,7 @@ before_install:
     - sudo apt-get update -qq
 
 install:
+    - sudo apt-get install build-essential
     # install lua
     - sudo apt-get install liblua5.2-dev
 
@@ -25,9 +26,9 @@ install:
     - sudo apt-get install libcppunit-dev
 
     # install newer compiler and set symlink to g++ version 4.9
-    - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.9; fi
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi
-    - sudo ln -sf /usr/bin/g++-4.9 /usr/bin/g++
+    #- if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.9; fi
+    #- if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi
+    #- sudo ln -sf /usr/bin/g++-4.9 /usr/bin/g++
 
     # check g++ version
     - $CXX --version
