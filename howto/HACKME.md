@@ -58,6 +58,11 @@ For further informations and troubleshooting see:
 
 2. Enter the directory of the cloned repository in the bash and type `make`. If the `make` command finish successfully: Lucky you! Go grab a beer, celebrate your victory and proceed further with step 3.
 
+Also Check `git status` and install the latest kernel versions with the following steps:
+	2.1. `cd can-isotp-master` and install newest kernel version with `sudo apt-get install raspberrypi-kernel-headers`
+	2.2. `cd ./can-isotp` and `make`. If the `make` command finish successfully go to step 3.
+
+
 Otherwise, if there is an error and make mumbles something about `error: to few arguments to function 'can_rx_register'` than:
 
 * Open the file `~/can-isotp/net/can/isotp.c`
@@ -67,16 +72,11 @@ Otherwise, if there is an error and make mumbles something about `error: to few 
 - > if you struggle with finding linux header for your raspberry pi use this command:
 `sudo apt-get install raspberrypi-kernel-headers`
 
-3. Install the modules with `sudo make modules_install`.
+3.  Install the modules with `sudo make modules_install`.
 
-4. When the PF_CAN core module is loaded ('modprobe can') the ISO-TP module
-   can be loaded into the kernel with
+4. Use this command only once after the installation `sudo depmod` to update dependencies between modules
 
-       insmod ./net/can/can-isotp.ko
-
-5. Use this command only once after the installation `sudo depmod`
-
-
+5. Do `sudo modprobe can-isotp` to add loadable kernel module, obsolete dependencies are automatically resolved (right dependencies are required!)
 
 After these steps, the usage of ISO-TP should be possible. In case the application prints an error like `Protocol not supported`, there went something wrong with the installation. See [can-isotp README](https://github.com/hartkopp/can-isotp) for further instructions and troubleshooting.
 
