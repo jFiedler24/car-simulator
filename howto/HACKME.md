@@ -56,7 +56,9 @@ For further informations and troubleshooting see:
 
 1. Clone the following repository with: `git clone https://github.com/hartkopp/can-isotp.git`
 
-2. Enter the directory of the cloned repository in the bash and type `make`. If the `make` command finish successfully: Lucky you! Go grab a beer, celebrate your victory and proceed further with step 3.
+2. Install the latest Linux Kernel Headers `sudo apt-get install build-essential raspberrypi-kernel-headers`
+ 
+3. Enter the directory of the cloned repository in the bash and type `make`. If the `make` command finish successfully: Lucky you! Go grab a beer, celebrate your victory and proceed further with step 3.
 
 Otherwise, if there is an error and make mumbles something about `error: to few arguments to function 'can_rx_register'` than:
 
@@ -67,14 +69,14 @@ Otherwise, if there is an error and make mumbles something about `error: to few 
 - > if you struggle with finding linux header for your raspberry pi use this command:
 `sudo apt-get install raspberrypi-kernel-headers`
 
-3. Install the modules with `sudo make modules_install`.
+4. Install the modules with `sudo make modules_install`.
 
-4. When the PF_CAN core module is loaded ('modprobe can') the ISO-TP module
+5. When the PF_CAN core module is loaded ('modprobe can') the ISO-TP module
    can be loaded into the kernel with
 
        insmod ./net/can/can-isotp.ko
 
-5. Use this command only once after the installation `sudo depmod`
+6. Use this command only once after the installation `sudo depmod`
 
 
 
