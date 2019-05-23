@@ -19,7 +19,7 @@
 clear
 echo "______________________________________________________________________________"
 echo ""
-echo "    install CAR-Simulator on Raspberry Pi 3 with PiCAN2 Duo CAN Bus Board? "
+echo "     install CAR-Simulator on Raspberry Pi 3 with PiCAN2 Duo CAN Bus Board? "
 echo ""
 echo "type 'y' if you are ready"
 read answer
