@@ -46,3 +46,7 @@ tags
 
 runme
 
+# CI/CD
+bw-output/
+.scannerwork/
+
