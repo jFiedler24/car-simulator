@@ -19,6 +19,7 @@ constexpr char BROADCAST_ID_FIELD[] = "BroadcastId";
 constexpr char READ_DATA_BY_IDENTIFIER_TABLE[] = "ReadDataByIdentifier";
 constexpr char READ_SEED[] = "Seed";
 constexpr char RAW_TABLE[] = "Raw";
+constexpr char J1939_SOURCE_ADDRESS_FIELD[] = "J1939SourceAddress";
 constexpr uint16_t DEFAULT_BROADCAST_ADDR = 0x7DF;
 
 class EcuLuaScript
@@ -35,6 +36,7 @@ public:
     std::uint16_t getRequestId() const;
     std::uint16_t getResponseId() const;
     std::uint16_t getBroadcastId() const;
+    std::uint8_t getJ1939SourceAddress() const;
     std::string getSeed(std::uint8_t identifier) const;
     std::string getDataByIdentifier(const std::string& identifier) const;
     std::string getDataByIdentifier(const std::string& identifier, const std::string& session) const;
@@ -55,6 +57,8 @@ public:
     void registerSessionController(SessionController* pSesCtrl) noexcept;
     void registerIsoTpSender(IsoTpSender* pSender) noexcept;
 
+    sel::State &getLuaState();
+
 private:
     sel::State lua_state_{true};
     std::string ecu_ident_;
@@ -63,6 +67,7 @@ private:
     std::uint16_t requestId_;
     std::uint16_t responseId_;
     std::uint16_t broadcastId_ = DEFAULT_BROADCAST_ADDR;
+    std::uint8_t j1939SourceAddress_;
 
 };
 

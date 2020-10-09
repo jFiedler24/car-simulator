@@ -78,6 +78,12 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
                 broadcastId_ = int(broadcastId);
             }
 
+            auto j1939SourceAddress = lua_state_[ecu_ident_.c_str()][J1939_SOURCE_ADDRESS_FIELD];
+            if (j1939SourceAddress.exists())
+            {
+                j1939SourceAddress_ = int(j1939SourceAddress);
+            }
+
             return;
         }
     }
@@ -97,6 +103,7 @@ EcuLuaScript::EcuLuaScript(EcuLuaScript&& orig) noexcept
 , requestId_(orig.requestId_)
 , responseId_(orig.responseId_)
 , broadcastId_(orig.broadcastId_)
+, j1939SourceAddress_(orig.j1939SourceAddress_)
 {
     orig.pSessionCtrl_ = nullptr;
     orig.pIsoTpSender_ = nullptr;
@@ -118,6 +125,7 @@ EcuLuaScript& EcuLuaScript::operator=(EcuLuaScript&& orig) noexcept
     requestId_ = orig.requestId_;
     responseId_ = orig.responseId_;
     broadcastId_ = orig.broadcastId_;
+    j1939SourceAddress_ = orig.j1939SourceAddress_;
     orig.pIsoTpSender_ = nullptr;
     orig.pSessionCtrl_ = nullptr;
     return *this;
@@ -156,6 +164,16 @@ uint16_t EcuLuaScript::getResponseId() const
 uint16_t EcuLuaScript::getBroadcastId() const
 {
     return broadcastId_;
+}
+
+/**
+ * Gets the J1939SourceAddress
+ *  
+ * @return the specific J1939 address according to the Lua file
+ */
+uint8_t EcuLuaScript::getJ1939SourceAddress() const
+{
+    return j1939SourceAddress_;
 }
 
 /**
@@ -514,3 +532,7 @@ void EcuLuaScript::registerIsoTpSender(IsoTpSender* pSender) noexcept
     pIsoTpSender_ = pSender;
 }
 
+sel::State &EcuLuaScript::getLuaState()
+{
+    return lua_state_;
+}
