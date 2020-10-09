@@ -44,7 +44,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/main.o \
 	${OBJECTDIR}/src/session_controller.o \
 	${OBJECTDIR}/src/uds_receiver.o \
-	${OBJECTDIR}/src/utilities.o
+	${OBJECTDIR}/src/utilities.o \
+	${OBJECTDIR}/src/j1939_simulator.o
+
 
 # Test Directory
 TESTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tests
@@ -143,6 +145,12 @@ ${OBJECTDIR}/src/utilities.o: src/utilities.cpp
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I/usr/include/lua5.2 -ISelene/include `pkg-config --cflags lua-5.2` -std=c++14  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/utilities.o src/utilities.cpp
+
+${OBJECTDIR}/src/j1939_simulator.o: src/j1939_simulator.cpp
+	${MKDIR} -p ${OBJECTDIR}/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I/usr/include/lua5.2 -ISelene/include `pkg-config --cflags lua-5.2` -std=c++14  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/j1939_simulator.o src/j1939_simulator.cpp
+
 
 # Subprojects
 .build-subprojects:
@@ -360,6 +368,19 @@ ${OBJECTDIR}/src/utilities_nomain.o: ${OBJECTDIR}/src/utilities.o src/utilities.
 	    $(COMPILE.cc) -O2 -I/usr/include/lua5.2 -ISelene/include `pkg-config --cflags lua-5.2` -std=c++14  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/utilities_nomain.o src/utilities.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/src/utilities.o ${OBJECTDIR}/src/utilities_nomain.o;\
+	fi
+
+${OBJECTDIR}/src/j1939_simulator_nomain.o: ${OBJECTDIR}/src/j1939_simulator.o src/j1939_simulator.cpp 
+	${MKDIR} -p ${OBJECTDIR}/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/src/j1939_simulator.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -I/usr/include/lua5.2 -ISelene/include `pkg-config --cflags lua-5.2` -std=c++14  -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/j1939_simulator_nomain.o src/j1939_simulator.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/src/j1939_simulator.o ${OBJECTDIR}/src/j1939_simulator_nomain.o;\
 	fi
 
 # Run Test Targets

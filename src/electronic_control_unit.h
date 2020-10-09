@@ -13,6 +13,7 @@
 #include "isotp_sender.h"
 #include "broadcast_receiver.h"
 #include "uds_receiver.h"
+#include "j1939_simulator.h"
 #include <string>
 #include <thread>
 #include <memory>
@@ -31,12 +32,14 @@ public:
 private:
     std::uint16_t requId_;
     std::uint16_t respId_;
+    std::uint8_t j1939SourceAddress_;
     SessionController sessionControl_;
     IsoTpSender sender_;
     BroadcastReceiver broadcastReceiver_;
     UdsReceiver udsReceiver_;
     std::thread udsReceiverThread_;
     std::thread broadcastReceiverThread_;
+    J1939Simulator j1939Simulator_;
 };
 
 #endif /* ELECTRONIC_CONTROL_UNIT_H */
