@@ -16,12 +16,20 @@ using namespace std;
 constexpr size_t MAX_BUFSIZE = 1788; // 255*7 Byte + 3 byte PGN
 
 J1939Simulator::J1939Simulator(uint8_t source_address,
-                               const std::string& device)
+                               const std::string& device,
+                               EcuLuaScript *pEcuScript)
 : source_address_(source_address)
 , device_(device)
+, pEcuScript_(pEcuScript)
 , j1939ReceiverThread_(&J1939Simulator::readData, this)
 {
     pgns_ = new uint16_t[1];
+    // This is just a demo for the getKeys function I implemented into Selene
+    // One could use that to fetch a list of configured PDNs from the lua file
+    cout << "Requests:" << endl;
+    for(auto const &request : pEcuScript_->getRawRequests()) {
+        cout << request << " -> "<< pEcuScript_->getRaw(request) << endl;
+    }
 }
 
 J1939Simulator::~J1939Simulator()
@@ -42,7 +50,7 @@ int J1939Simulator::openReceiver() noexcept
     struct sockaddr_can addr;
     addr.can_family = AF_CAN;
 
-    addr.can_addr.j1939.pgn = J1939_NO_PGN;
+    addr.can_addr.j1939.pgn = J1939_NO_PGN; // Receive all PGNs
     addr.can_addr.j1939.name = J1939_NO_NAME; // Don't do name lookups
     addr.can_addr.j1939.addr = 3; // source address
 
@@ -110,6 +118,7 @@ int J1939Simulator::readData() noexcept
         return -1;
     }
 
+    // Sending some dummy PGN to see that it works
     struct sockaddr_can saddr;
     saddr.can_family = AF_CAN;
     saddr.can_addr.j1939.name = J1939_NO_NAME;
@@ -119,6 +128,7 @@ int J1939Simulator::readData() noexcept
     uint8_t dat[] = {0x01, 0xff, 0xab, 0xa3};
     sendto(receive_skt_, dat, sizeof(dat), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
 
+    // the actual receive
     uint8_t msg[MAX_BUFSIZE];
     size_t num_bytes;
     do
@@ -142,6 +152,7 @@ int J1939Simulator::readData() noexcept
  */
 void J1939Simulator::proceedReceivedData(const uint8_t* buffer, const size_t num_bytes) noexcept
 {
+    // Print out what we received
     cout << __func__ << "() Received " << dec << num_bytes << " bytes.\n";
     for (size_t i = 0; i < num_bytes; i++)
     {

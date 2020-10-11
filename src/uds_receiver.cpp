@@ -31,11 +31,11 @@ static random_device RANDOM_DEVICE; ///< necessary for `generateSeed()`
 UdsReceiver::UdsReceiver(canid_t source,
                          canid_t dest,
                          const string& device,
-                         unique_ptr<EcuLuaScript> pEcuScript,
+                         EcuLuaScript *pEcuScript,
                          IsoTpSender* pSender,
                          SessionController* pSesCtrl)
 : IsoTpReceiver(source, dest, device)
-, pEcuScript_(move(pEcuScript))
+, pEcuScript_(pEcuScript)
 , pIsoTpSender_(pSender)
 , pSessionCtrl_(pSesCtrl)
 {
