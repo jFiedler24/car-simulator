@@ -471,6 +471,16 @@ bool EcuLuaScript::hasRaw(const string& identStr) const
 }
 
 /**
+ * Gets all request entries from the Lua "Raw"-Table.
+ *
+ * @return vector of raw request data as they are configured in lua
+ */
+vector<string> EcuLuaScript::getRawRequests()
+{
+    return lua_state_[ecu_ident_.c_str()][RAW_TABLE].getKeys();
+}
+
+/**
  * Gets the raw data entries from the Lua "Raw"-Table.
  * The identifiers of the corresponding entries are literal hex byte strings
  * (e.g. "12 FF 00"). The entries are either strings or functions that need
@@ -530,9 +540,4 @@ void EcuLuaScript::registerSessionController(SessionController* pSesCtrl) noexce
 void EcuLuaScript::registerIsoTpSender(IsoTpSender* pSender) noexcept
 {
     pIsoTpSender_ = pSender;
-}
-
-sel::State &EcuLuaScript::getLuaState()
-{
-    return lua_state_;
 }

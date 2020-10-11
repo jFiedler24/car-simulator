@@ -16,10 +16,10 @@ ElectronicControlUnit::ElectronicControlUnit(const string& device, unique_ptr<Ec
 , j1939SourceAddress_(pEcuScript->getJ1939SourceAddress())
 , sender_(respId_, requId_, device)
 , broadcastReceiver_(pEcuScript->getBroadcastId(), device, &udsReceiver_)
-, udsReceiver_(respId_, requId_, device, move(pEcuScript), &sender_, &sessionControl_)
+, udsReceiver_(respId_, requId_, device, pEcuScript.get(), &sender_, &sessionControl_)
 , udsReceiverThread_(&IsoTpReceiver::readData, &udsReceiver_)
 , broadcastReceiverThread_(&IsoTpReceiver::readData, &broadcastReceiver_)
-, j1939Simulator_(j1939SourceAddress_, device)
+, j1939Simulator_(j1939SourceAddress_, device, pEcuScript.get())
 {
 }
 

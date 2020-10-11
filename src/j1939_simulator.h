@@ -19,17 +19,18 @@ class J1939Simulator
 public:
     J1939Simulator() = delete;
     J1939Simulator(uint8_t source_address,
-                   const std::string& device);
+                   const std::string& device,
+                   EcuLuaScript* pEcuScript);
     virtual ~J1939Simulator();
     int openReceiver() noexcept;
     void closeReceiver() noexcept;
     int readData() noexcept;
     void proceedReceivedData(const uint8_t* buffer, const size_t num_bytes) noexcept;
 
-
 private:
     uint8_t source_address_;
     std::string device_;
+    EcuLuaScript* pEcuScript_;
     int receive_skt_ = -1;
     bool isOnExit_ = false;
     std::thread j1939ReceiverThread_;
