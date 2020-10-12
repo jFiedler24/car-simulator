@@ -10,6 +10,7 @@
 #include <net/if.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 
 using namespace std;
 
@@ -131,13 +132,19 @@ int J1939Simulator::readData() noexcept
     // the actual receive
     uint8_t msg[MAX_BUFSIZE];
     size_t num_bytes;
+
+    socklen_t addrlen = sizeof(saddr);
+
     do
     {
         cout << "Reading from socket" << endl;
-        num_bytes = read(receive_skt_, msg, MAX_BUFSIZE);
+        num_bytes = recvfrom(receive_skt_, msg, sizeof(msg), 0, (struct sockaddr *)&saddr, &addrlen);
+
+        cout << "Message received from: " << hex << (unsigned short)saddr.can_addr.j1939.addr << dec << endl;
+
         if (num_bytes > 0 && num_bytes < MAX_BUFSIZE)
         {
-            proceedReceivedData(msg, num_bytes);
+            proceedReceivedData(msg, num_bytes, saddr.can_addr.j1939.addr);
         }
     }
     while (!isOnExit_);
@@ -150,8 +157,9 @@ int J1939Simulator::readData() noexcept
  * 
  * @see J1939Simulator::readData()
  */
-void J1939Simulator::proceedReceivedData(const uint8_t* buffer, const size_t num_bytes) noexcept
+void J1939Simulator::proceedReceivedData(const uint8_t* buffer, const size_t num_bytes, const uint8_t sourceAddress) noexcept
 {
+    
     // Print out what we received
     cout << __func__ << "() Received " << dec << num_bytes << " bytes.\n";
     for (size_t i = 0; i < num_bytes; i++)
@@ -163,4 +171,31 @@ void J1939Simulator::proceedReceivedData(const uint8_t* buffer, const size_t num
                 << static_cast<int> (buffer[i]);
     }
     cout << endl;
+
+    if(num_bytes > 2 
+        && buffer[0] == 0xec
+        && buffer[1] == 0xfe
+        && buffer[2] == 0x00
+    ) {
+        sendVIN(sourceAddress);
+    }
+}
+
+void J1939Simulator::sendVIN(const uint8_t targetAddress) noexcept
+{
+    cout << "Sending VIN" << endl;
+    // Sending some dummy PGN to see that it works
+    struct sockaddr_can saddr = {};
+    saddr.can_family = AF_CAN;
+    saddr.can_addr.j1939.name = J1939_NO_NAME;
+    saddr.can_addr.j1939.pgn = 0x0feec;
+    saddr.can_addr.j1939.addr = targetAddress;
+
+    uint8_t dat[] = {0x01, 0xff, 0xab, 0xa3, 0xfe, 0x23, 0x17, 0x22, 0x9f};
+    if(sendto(receive_skt_, dat, sizeof(dat), 0, (const struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+    {
+        cout << "Error sending VIN: " << strerror(errno) << endl;
+    }
+
+    cout << "VIN sent" << endl;
 }

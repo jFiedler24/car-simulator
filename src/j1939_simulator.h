@@ -25,7 +25,8 @@ public:
     int openReceiver() noexcept;
     void closeReceiver() noexcept;
     int readData() noexcept;
-    void proceedReceivedData(const uint8_t* buffer, const size_t num_bytes) noexcept;
+    void proceedReceivedData(const uint8_t* buffer, const size_t num_bytes, const uint8_t sourceAddress) noexcept;
+    void sendVIN(const uint8_t targetAddress) noexcept;
 
 private:
     uint8_t source_address_;
