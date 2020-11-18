@@ -6,11 +6,17 @@
 #include <iomanip>
 #include <cstdio>
 #include <cstring>
+#include <string>
+#include <vector>
+#include <unistd.h>
+
 
 #include <net/if.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+
+
 
 using namespace std;
 
@@ -22,20 +28,53 @@ J1939Simulator::J1939Simulator(uint8_t source_address,
 : source_address_(source_address)
 , device_(device)
 , pEcuScript_(pEcuScript)
-, j1939ReceiverThread_(&J1939Simulator::readData, this)
+//, j1939ReceiverThread_(&J1939Simulator::readData, this)
 {
     pgns_ = new uint16_t[1];
+
+    int err = openReceiver();
+    if (err != 0)
+    {
+        throw exception();
+    }
+
+    sendVIN(0x03);
     // This is just a demo for the getKeys function I implemented into Selene
     // One could use that to fetch a list of configured PDNs from the lua file
     cout << "Requests:" << endl;
     for(auto const &request : pEcuScript_->getRawRequests()) {
         cout << request << " -> "<< pEcuScript_->getRaw(request) << endl;
     }
+
+    cout << "PGNs:" << endl;
+    for(auto const &pgn : pEcuScript_->getJ1939PGNs()) {
+        cout << pgn << " -> "<< pEcuScript_->getJ1939PGN(pgn) << endl;
+    }
+
+    startPeriodicSenderThreads();
+
 }
 
 J1939Simulator::~J1939Simulator()
 {
+    for (auto cyclicThread : cyclicMessageThreads) {
+        delete cyclicThread;
+    }
+    cyclicMessageThreads.clear();
+}
 
+void J1939Simulator::startPeriodicSenderThreads()
+{
+    cout << "Fetching PGNs" << endl;
+    vector<string> pgns = pEcuScript_->getJ1939PGNs();
+    cout << "PGNs fetched" << endl;
+
+    for (auto pgn : pgns) {
+        cout << "PGN: " << pgn << endl;
+        std::thread *cyclicThread = new std::thread(&J1939Simulator::sendCyclicMessage, this, pgn);
+        cyclicMessageThreads.push_back(cyclicThread);
+    }
+    cout << "PGN threads started" << endl;
 }
 
 /**
@@ -107,12 +146,6 @@ void J1939Simulator::closeReceiver() noexcept
  */
 int J1939Simulator::readData() noexcept
 {
-    int err = openReceiver();
-    if (err != 0)
-    {
-        throw exception();
-    }
-
     if (receive_skt_ < 0)
     {
         cerr << __func__ << "() Can not read data. J1939 receiver socket invalid!\n";
@@ -198,4 +231,29 @@ void J1939Simulator::sendVIN(const uint8_t targetAddress) noexcept
     }
 
     cout << "VIN sent" << endl;
+}
+
+void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
+{
+    cout << "Sending Cyclic PGN: " << pgn << endl;
+
+    struct sockaddr_can saddr = {};
+    saddr.can_family = AF_CAN;
+    saddr.can_addr.j1939.name = J1939_NO_NAME;
+    saddr.can_addr.j1939.pgn = strtol(pgn.c_str(), NULL, 10);
+    saddr.can_addr.j1939.addr = 0x03;
+
+    do {
+        string pgnMessage = pEcuScript_->getJ1939PGN(pgn);
+        vector<unsigned char> rawMessage = pEcuScript_->literalHexStrToBytes(pgnMessage);
+
+        if(sendto(receive_skt_, rawMessage.data(), rawMessage.size(), 0, (const struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+        {
+            cout << "Error sending PGN: " << strerror(errno) << endl;
+        }
+        cout << "PGN sent: " << pgn << endl;
+
+        usleep(1000 * 1000); // takes microseconds
+
+    } while (!isOnExit_);
 }

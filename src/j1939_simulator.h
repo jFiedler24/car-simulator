@@ -25,8 +25,10 @@ public:
     int openReceiver() noexcept;
     void closeReceiver() noexcept;
     int readData() noexcept;
+    void startPeriodicSenderThreads();
     void proceedReceivedData(const uint8_t* buffer, const size_t num_bytes, const uint8_t sourceAddress) noexcept;
     void sendVIN(const uint8_t targetAddress) noexcept;
+    void sendCyclicMessage(const std::string pgn) noexcept;
 
 private:
     uint8_t source_address_;
@@ -34,7 +36,8 @@ private:
     EcuLuaScript* pEcuScript_;
     int receive_skt_ = -1;
     bool isOnExit_ = false;
-    std::thread j1939ReceiverThread_;
+    //std::thread j1939ReceiverThread_;
+    std::vector<std::thread*> cyclicMessageThreads;
 
     sel::State lua_state_;
     uint16_t *pgns_;

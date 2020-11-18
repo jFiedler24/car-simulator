@@ -33,6 +33,8 @@ static string receivedDataBytes = "";
  */
 EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
 {
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
     if (utils::existsFile(luaScript))
     {
         // inject the C++ functions into the Lua script
@@ -182,8 +184,10 @@ uint8_t EcuLuaScript::getJ1939SourceAddress() const
  * @param identifier: the identifier to access the field in the Lua table
  * @return the identifier field on success, otherwise an empty string
  */
-string EcuLuaScript::getDataByIdentifier(const string& identifier) const
+string EcuLuaScript::getDataByIdentifier(const string& identifier)
 {
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
     auto val = lua_state_[ecu_ident_.c_str()][READ_DATA_BY_IDENTIFIER_TABLE][identifier];
 
     if (val.isFunction())
@@ -203,8 +207,10 @@ string EcuLuaScript::getDataByIdentifier(const string& identifier) const
  * @param session: the session as string (e.g. "Programming")
  * @return the identifier field on success, otherwise an empty string
  */
-string EcuLuaScript::getDataByIdentifier(const string& identifier, const string& session) const
+string EcuLuaScript::getDataByIdentifier(const string& identifier, const string& session)
 {
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
     auto val = lua_state_[ecu_ident_.c_str()][session][READ_DATA_BY_IDENTIFIER_TABLE][identifier];
 
     if (val.isFunction())
@@ -217,8 +223,10 @@ string EcuLuaScript::getDataByIdentifier(const string& identifier, const string&
     }
 }
 
-string EcuLuaScript::getSeed(uint8_t seed_level) const
+string EcuLuaScript::getSeed(uint8_t seed_level)
 {
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
     auto val = lua_state_[ecu_ident_.c_str()][READ_SEED][seed_level];
     if (val.exists())
     {
@@ -452,8 +460,10 @@ void EcuLuaScript::switchToSession(int ses)
  * @param identStr: the identifier string for the entry in the Lua "Raw"-table
  * @return true if identifier is in the raw section, false otherwise
  */
-bool EcuLuaScript::hasRaw(const string& identStr) const
+bool EcuLuaScript::hasRaw(const string& identStr)
 {
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
     auto val = lua_state_[ecu_ident_.c_str()][RAW_TABLE][identStr.c_str()];
     if(val.exists()==false){
         string identStrWorking = " ";
@@ -477,7 +487,58 @@ bool EcuLuaScript::hasRaw(const string& identStr) const
  */
 vector<string> EcuLuaScript::getRawRequests()
 {
-    return lua_state_[ecu_ident_.c_str()][RAW_TABLE].getKeys();
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
+    auto rawTable = lua_state_[ecu_ident_.c_str()][RAW_TABLE];
+    if(rawTable.exists()) {
+        return rawTable.getKeys();
+    } else {
+        return vector<string>();
+    }
+}
+
+/**
+ * Gets J1939 PGNS from the Lua PGN-Table.
+ *
+ * @return vector of raw message data as they are configured in lua
+ */
+vector<string> EcuLuaScript::getJ1939PGNs()
+{
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
+    cout << "Get PGNs from ident: " << ecu_ident_ << endl;
+    auto pgnTable = lua_state_[ecu_ident_.c_str()][J1939_PGN_TABLE];
+    if(pgnTable.exists()) {
+        return pgnTable.getKeys();
+    } else {
+        return vector<string>();
+    }
+}
+
+string EcuLuaScript::getJ1939PGN(const string& pgn)
+{
+    const std::lock_guard<std::mutex> lock(luaLock_);
+
+    cout << "Looking for PGN: " << pgn << endl;
+    auto val = lua_state_[ecu_ident_.c_str()][J1939_PGN_TABLE][pgn.c_str()];
+    cout << "Checking PGN value: " << pgn << endl;
+    if(val.exists() == true) {
+        cout << "Found PGN: " << pgn << endl;
+        if (val.isFunction())
+        {
+            return val(pgn);
+        }
+        else
+        {
+            //cout << "PGN Value: " << pgn << " -> " << val << endl;
+            cout << "Returning PGN value" << endl;
+            return val; // will be cast into string
+        } 
+    } else {
+        cerr << "Unknown PGN: " << pgn << endl;
+        return "";
+    }
+    // TODO: Evaluate functions
 }
 
 /**
@@ -489,8 +550,10 @@ vector<string> EcuLuaScript::getRawRequests()
  * @param identStr: the identifier string for the entry in the Lua "Raw"-table
  * @return the raw data as literal hex byte string or an empty string on error
  */
-string EcuLuaScript::getRaw(const string& identStr) const
+string EcuLuaScript::getRaw(const string& identStr)
 { 
+    const std::lock_guard<std::mutex> scopelock(luaLock_);
+
     auto val = lua_state_[ecu_ident_.c_str()][RAW_TABLE][identStr.c_str()];
     if(val.exists() == true){
         
