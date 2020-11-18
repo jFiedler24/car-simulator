@@ -12,6 +12,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <mutex>
 
 constexpr char REQ_ID_FIELD[] = "RequestId";
 constexpr char RES_ID_FIELD[] = "ResponseId";
@@ -20,6 +21,7 @@ constexpr char READ_DATA_BY_IDENTIFIER_TABLE[] = "ReadDataByIdentifier";
 constexpr char READ_SEED[] = "Seed";
 constexpr char RAW_TABLE[] = "Raw";
 constexpr char J1939_SOURCE_ADDRESS_FIELD[] = "J1939SourceAddress";
+constexpr char J1939_PGN_TABLE[] = "PGNs";
 constexpr uint16_t DEFAULT_BROADCAST_ADDR = 0x7DF;
 
 class EcuLuaScript
@@ -37,12 +39,15 @@ public:
     std::uint16_t getResponseId() const;
     std::uint16_t getBroadcastId() const;
     std::uint8_t getJ1939SourceAddress() const;
-    std::string getSeed(std::uint8_t identifier) const;
-    std::string getDataByIdentifier(const std::string& identifier) const;
-    std::string getDataByIdentifier(const std::string& identifier, const std::string& session) const;
+    std::string getSeed(std::uint8_t identifier);
+    std::string getDataByIdentifier(const std::string& identifier);
+    std::string getDataByIdentifier(const std::string& identifier, const std::string& session);
     std::vector<std::string> getRawRequests();
-    std::string getRaw(const std::string& identStr) const;
-    bool hasRaw(const std::string& identStr) const;
+    std::vector<std::string> getJ1939PGNs();
+    std::string getJ1939PGN(const std::string& pgn);
+
+    std::string getRaw(const std::string& identStr);
+    bool hasRaw(const std::string& identStr);
     static std::vector<std::uint8_t> literalHexStrToBytes(const std::string& hexString);
 
     static std::string ascii(const std::string& utf8_str) noexcept;
@@ -67,7 +72,7 @@ private:
     std::uint16_t responseId_;
     std::uint16_t broadcastId_ = DEFAULT_BROADCAST_ADDR;
     std::uint8_t j1939SourceAddress_;
-
+    std::mutex luaLock_;
 };
 
 #endif /* ECU_LUA_SCRIPT_H */
