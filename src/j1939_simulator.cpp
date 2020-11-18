@@ -92,7 +92,7 @@ int J1939Simulator::openReceiver() noexcept
 
     addr.can_addr.j1939.pgn = J1939_NO_PGN; // Receive all PGNs
     addr.can_addr.j1939.name = J1939_NO_NAME; // Don't do name lookups
-    addr.can_addr.j1939.addr = 3; // source address
+    addr.can_addr.j1939.addr = source_address_; // source address
 
     int skt = socket(PF_CAN, SOCK_DGRAM, CAN_J1939);
     if (skt < 0)
@@ -241,7 +241,7 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
     saddr.can_family = AF_CAN;
     saddr.can_addr.j1939.name = J1939_NO_NAME;
     saddr.can_addr.j1939.pgn = strtol(pgn.c_str(), NULL, 10);
-    saddr.can_addr.j1939.addr = 0x03;
+    saddr.can_addr.j1939.addr = 0;
 
     do {
         string pgnMessage = pEcuScript_->getJ1939PGN(pgn);
