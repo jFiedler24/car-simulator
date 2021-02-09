@@ -57,7 +57,7 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
             auto requId = lua_state_[ecu_ident_.c_str()][REQ_ID_FIELD];
             if (requId.exists())
             {
-                requestId_ = int(requId);
+                requestId_ = uint32_t(requId);
             }
             else
             {
@@ -67,7 +67,7 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
             auto respId = lua_state_[ecu_ident_.c_str()][RES_ID_FIELD];
             if (respId.exists())
             {
-                responseId_ = int(respId);
+                responseId_ = uint32_t(respId);
             }
             else
             {
@@ -77,13 +77,13 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
             auto broadcastId = lua_state_[ecu_ident_.c_str()][BROADCAST_ID_FIELD];
             if (broadcastId.exists())
             {
-                broadcastId_ = int(broadcastId);
+                broadcastId_ = uint32_t(broadcastId);
             }
 
             auto j1939SourceAddress = lua_state_[ecu_ident_.c_str()][J1939_SOURCE_ADDRESS_FIELD];
             if (j1939SourceAddress.exists())
             {
-                j1939SourceAddress_ = int(j1939SourceAddress);
+                j1939SourceAddress_ = uint8_t(j1939SourceAddress);
             }
 
             return;
@@ -140,7 +140,7 @@ EcuLuaScript& EcuLuaScript::operator=(EcuLuaScript&& orig) noexcept
  *
  * @return the request ID or 0 on error
  */
-uint16_t EcuLuaScript::getRequestId() const
+uint32_t EcuLuaScript::getRequestId() const
 {
     return requestId_;
 }
@@ -152,7 +152,7 @@ uint16_t EcuLuaScript::getRequestId() const
  *
  * @return the response ID or 0 on error
  */
-uint16_t EcuLuaScript::getResponseId() const
+uint32_t EcuLuaScript::getResponseId() const
 {
     return responseId_;
 }
@@ -163,7 +163,7 @@ uint16_t EcuLuaScript::getResponseId() const
  * @return the specific broadcast address according to the Lua file or `0x7DF`
  *         on default
  */
-uint16_t EcuLuaScript::getBroadcastId() const
+uint32_t EcuLuaScript::getBroadcastId() const
 {
     return broadcastId_;
 }

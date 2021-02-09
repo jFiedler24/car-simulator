@@ -30,8 +30,8 @@ public:
     virtual ~ElectronicControlUnit();
 
 private:
-    std::uint16_t requId_;
-    std::uint16_t respId_;
+    std::uint32_t requId_;
+    std::uint32_t respId_;
     std::uint8_t j1939SourceAddress_;
     SessionController sessionControl_;
     IsoTpSender sender_;
