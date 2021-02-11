@@ -21,6 +21,9 @@
 class ElectronicControlUnit
 {
 public:
+    static bool hasSimulation(EcuLuaScript *pEcuScript);
+
+public:
     ElectronicControlUnit() = delete;
     ElectronicControlUnit(const std::string& device, EcuLuaScript *pEcuScript);
     ElectronicControlUnit(const ElectronicControlUnit& orig) = default;
@@ -29,17 +32,19 @@ public:
     ElectronicControlUnit& operator =(ElectronicControlUnit&& orig) = default;
     virtual ~ElectronicControlUnit();
 
+    void stopSimulation();
+    void waitForSimulationEnd();
+
+
 private:
     std::uint32_t requId_;
     std::uint32_t respId_;
-    std::uint8_t j1939SourceAddress_;
     SessionController sessionControl_;
     IsoTpSender sender_;
     BroadcastReceiver broadcastReceiver_;
     UdsReceiver udsReceiver_;
     std::thread udsReceiverThread_;
     std::thread broadcastReceiverThread_;
-    J1939Simulator j1939Simulator_;
 };
 
 #endif /* ELECTRONIC_CONTROL_UNIT_H */

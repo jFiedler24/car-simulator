@@ -44,7 +44,6 @@ IsoTpSender::IsoTpSender(canid_t source,
  */
 IsoTpSender::~IsoTpSender()
 {
-    closeSender();
 }
 
 /**

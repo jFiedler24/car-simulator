@@ -13,18 +13,36 @@ using namespace std;
 ElectronicControlUnit::ElectronicControlUnit(const string& device, EcuLuaScript *pEcuScript)
 : requId_(pEcuScript->getRequestId())
 , respId_(pEcuScript->getResponseId())
-, j1939SourceAddress_(pEcuScript->getJ1939SourceAddress())
 , sender_(respId_, requId_, device)
 , broadcastReceiver_(pEcuScript->getBroadcastId(), device, &udsReceiver_)
 , udsReceiver_(respId_, requId_, device, pEcuScript, &sender_, &sessionControl_)
 , udsReceiverThread_(&IsoTpReceiver::readData, &udsReceiver_)
 , broadcastReceiverThread_(&IsoTpReceiver::readData, &broadcastReceiver_)
-, j1939Simulator_(j1939SourceAddress_, device, pEcuScript)
 {
+}
+
+void ElectronicControlUnit::stopSimulation()
+{
+    sender_.closeSender();
+    broadcastReceiver_.closeReceiver();
+    udsReceiver_.closeReceiver();
+}
+
+void ElectronicControlUnit::waitForSimulationEnd()
+{
+    broadcastReceiverThread_.join();
+    udsReceiverThread_.join();
 }
 
 ElectronicControlUnit::~ElectronicControlUnit()
 {
-    broadcastReceiverThread_.join();
-    udsReceiverThread_.join();
+
+}
+
+bool ElectronicControlUnit::hasSimulation(EcuLuaScript *pEcuScript)
+{
+    if(pEcuScript->hasRequestId() && pEcuScript->hasResponseId()) {
+        return true;
+    }
+    return false;
 }

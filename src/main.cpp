@@ -7,11 +7,18 @@
 
 #include "ecu_lua_script.h"
 #include "electronic_control_unit.h"
+#include "j1939_simulator.h"
 #include "ecu_timer.h"
 #include "utilities.h"
 #include <string>
+#include <thread>
+#include <signal.h>
 
 using namespace std;
+
+vector<ElectronicControlUnit *> udsSimulators;
+vector<J1939Simulator *> j1939Simulators;
+
 
 void start_server(const string &config_file, const string &device)
 {
@@ -19,9 +26,43 @@ void start_server(const string &config_file, const string &device)
          << " on device: " << device << endl;
 
     EcuLuaScript *script = new EcuLuaScript("Main", LUA_CONFIG_PATH + config_file);
-    ElectronicControlUnit ecu(device, script);
+
+    ElectronicControlUnit *udsSimulator = NULL;
+    J1939Simulator *j1939Simulator = NULL;
+
+    if(ElectronicControlUnit::hasSimulation(script)) {
+        udsSimulator = new ElectronicControlUnit(device, script);
+        udsSimulators.push_back(udsSimulator);
+    }
+    if(J1939Simulator::hasSimulation(script)) {
+        j1939Simulator = new J1939Simulator(device, script);
+        j1939Simulators.push_back(j1939Simulator);
+    }
+
+    if(udsSimulator) {
+        udsSimulator->waitForSimulationEnd();
+        cout << "UDS terminated" << endl;
+        delete udsSimulator;
+    }
+    if(j1939Simulator) {
+        j1939Simulator->waitForSimulationEnd();
+        cout << "J1939 terminated" << endl;
+        delete j1939Simulator;
+    }
 }
 
+void signalHandler(int signum) {
+    printf("Received signal %d\n",signum);
+    if(signum == SIGINT) {
+        for (ElectronicControlUnit *simulator : udsSimulators) {
+            simulator->stopSimulation();
+        }
+        for (J1939Simulator *simulator : j1939Simulators) {
+            simulator->stopSimulation();
+        }
+        exit(1);
+    }
+}
 /**
  * The main application only for testing purposes.
  *
@@ -41,6 +82,8 @@ int main(int argc, char** argv)
 
     vector<string> config_files = utils::getConfigFilenames(LUA_CONFIG_PATH);
     vector<thread> threads;
+
+    signal(SIGINT, signalHandler);
 
     for (const string &config_file : config_files)
     {

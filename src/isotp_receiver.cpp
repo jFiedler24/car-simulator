@@ -49,7 +49,6 @@ IsoTpReceiver::IsoTpReceiver(canid_t source,
  */
 IsoTpReceiver::~IsoTpReceiver()
 {
-    closeReceiver();
 }
 
 /**
@@ -152,6 +151,7 @@ int IsoTpReceiver::readData() noexcept
     do
     {
         num_bytes = read(receive_skt_, msg, MAX_BUFSIZE);
+        cout << "READ returned" << endl;
         if (num_bytes > 0 && num_bytes < MAX_BUFSIZE)
         {
             proceedReceivedData(msg, num_bytes);

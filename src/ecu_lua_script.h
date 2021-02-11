@@ -35,10 +35,15 @@ public:
     EcuLuaScript& operator =(EcuLuaScript&& orig) noexcept;
     virtual ~EcuLuaScript() = default;
 
+    bool hasRequestId() const { return hasRequestId_; };
     std::uint32_t getRequestId() const;
+    bool hasResponseId() const { return hasResponseId_; };
     std::uint32_t getResponseId() const;
+    bool hasBroadcastId() const { return hasBroadcastId_; };
     std::uint32_t getBroadcastId() const;
+    bool hasJ1939SourceAddress() const { return hasJ1939SourceAddress_; };
     std::uint8_t getJ1939SourceAddress() const;
+
     std::string getSeed(std::uint8_t identifier);
     std::string getDataByIdentifier(const std::string& identifier);
     std::string getDataByIdentifier(const std::string& identifier, const std::string& session);
@@ -68,9 +73,13 @@ private:
     std::string ecu_ident_;
     SessionController* pSessionCtrl_ = nullptr;
     IsoTpSender* pIsoTpSender_ = nullptr;
+    bool hasRequestId_ = false;
     std::uint32_t requestId_;
+    bool hasResponseId_ = false;
     std::uint32_t responseId_;
+    bool hasBroadcastId_ = false;
     std::uint32_t broadcastId_ = DEFAULT_BROADCAST_ADDR;
+    bool hasJ1939SourceAddress_ = false;
     std::uint8_t j1939SourceAddress_;
     std::mutex luaLock_;
 };

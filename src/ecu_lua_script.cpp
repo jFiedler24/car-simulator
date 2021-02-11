@@ -57,33 +57,29 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
             auto requId = lua_state_[ecu_ident_.c_str()][REQ_ID_FIELD];
             if (requId.exists())
             {
+                hasRequestId_ = true;
                 requestId_ = uint32_t(requId);
-            }
-            else
-            {
-                throw invalid_argument("No 'RequestId'-field in the Lua ECU table!");
             }
 
             auto respId = lua_state_[ecu_ident_.c_str()][RES_ID_FIELD];
             if (respId.exists())
             {
+                hasResponseId_ = true;
                 responseId_ = uint32_t(respId);
-            }
-            else
-            {
-                throw invalid_argument("No 'ResponseId'-field in the Lua ECU table!");
             }
 
             auto broadcastId = lua_state_[ecu_ident_.c_str()][BROADCAST_ID_FIELD];
             if (broadcastId.exists())
             {
+                hasBroadcastId_ = true;
                 broadcastId_ = uint32_t(broadcastId);
             }
 
             auto j1939SourceAddress = lua_state_[ecu_ident_.c_str()][J1939_SOURCE_ADDRESS_FIELD];
             if (j1939SourceAddress.exists())
             {
-                j1939SourceAddress_ = uint8_t(j1939SourceAddress);
+                hasJ1939SourceAddress_ = true;
+                j1939SourceAddress_ = uint32_t(j1939SourceAddress);
             }
 
             return;
