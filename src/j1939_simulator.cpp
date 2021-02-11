@@ -22,14 +22,21 @@ using namespace std;
 
 constexpr size_t MAX_BUFSIZE = 1788; // 255*7 Byte + 3 byte PGN
 
-J1939Simulator::J1939Simulator(uint8_t source_address,
-                               const std::string& device,
+bool J1939Simulator::hasSimulation(EcuLuaScript *pEcuScript)
+{
+    if(pEcuScript->hasJ1939SourceAddress()) {
+        return true;
+    }
+    return false;
+}
+
+J1939Simulator::J1939Simulator(const std::string& device,
                                EcuLuaScript *pEcuScript)
-: source_address_(source_address)
-, device_(device)
+: device_(device)
 , pEcuScript_(pEcuScript)
 //, j1939ReceiverThread_(&J1939Simulator::readData, this)
 {
+    source_address_ = pEcuScript->getJ1939SourceAddress();
     pgns_ = new uint16_t[1];
 
     int err = openReceiver();
@@ -54,6 +61,19 @@ J1939Simulator::J1939Simulator(uint8_t source_address,
     startPeriodicSenderThreads();
 
 }
+
+void J1939Simulator::stopSimulation()
+{
+    closeReceiver();
+}
+
+void J1939Simulator::waitForSimulationEnd()
+{
+    for (auto cyclicThread : cyclicMessageThreads) {
+        cyclicThread->join();
+    }
+}
+
 
 J1939Simulator::~J1939Simulator()
 {

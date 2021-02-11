@@ -17,9 +17,11 @@
 class J1939Simulator
 {
 public:
+    static bool hasSimulation(EcuLuaScript *pEcuScript);
+
+public:
     J1939Simulator() = delete;
-    J1939Simulator(uint8_t source_address,
-                   const std::string& device,
+    J1939Simulator(const std::string& device,
                    EcuLuaScript* pEcuScript);
     virtual ~J1939Simulator();
     int openReceiver() noexcept;
@@ -29,6 +31,10 @@ public:
     void proceedReceivedData(const uint8_t* buffer, const size_t num_bytes, const uint8_t sourceAddress) noexcept;
     void sendVIN(const uint8_t targetAddress) noexcept;
     void sendCyclicMessage(const std::string pgn) noexcept;
+
+    void stopSimulation();
+    void waitForSimulationEnd();
+
 
 private:
     uint8_t source_address_;
