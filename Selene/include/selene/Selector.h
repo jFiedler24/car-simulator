@@ -446,6 +446,14 @@ public:
         return lua_isfunction(_state, -1);
     }
 
+    bool isTable() {
+        ResetStackOnScopeExit save(_state);
+        _traverse();
+        _get();
+
+        return lua_istable(_state, -1);
+    }
+
 private:
     std::string ToString() const {
         ResetStackOnScopeExit save(_state);

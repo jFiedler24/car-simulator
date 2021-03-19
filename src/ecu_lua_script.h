@@ -22,6 +22,7 @@ constexpr char READ_SEED[] = "Seed";
 constexpr char RAW_TABLE[] = "Raw";
 constexpr char J1939_SOURCE_ADDRESS_FIELD[] = "J1939SourceAddress";
 constexpr char J1939_PGN_TABLE[] = "PGNs";
+constexpr char J1939_PGN_PAYLOAD[] = "payload";
 constexpr uint32_t DEFAULT_BROADCAST_ADDR = 0x7DF;
 
 class EcuLuaScript

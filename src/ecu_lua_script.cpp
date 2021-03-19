@@ -524,6 +524,10 @@ string EcuLuaScript::getJ1939PGN(const string& pgn)
         {
             return val(pgn);
         }
+        else if(val.isTable())
+        {
+            return val[J1939_PGN_PAYLOAD];
+        }
         else
         {
             //cout << "PGN Value: " << pgn << " -> " << val << endl;
