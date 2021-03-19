@@ -55,7 +55,7 @@ J1939Simulator::J1939Simulator(const std::string& device,
 
     cout << "PGNs:" << endl;
     for(auto const &pgn : pEcuScript_->getJ1939PGNs()) {
-        cout << pgn << " -> "<< pEcuScript_->getJ1939PGN(pgn) << endl;
+        cout << pgn << " -> "<< pEcuScript_->getJ1939PGNData(pgn).payload << endl;
     }
 
     startPeriodicSenderThreads();
@@ -264,7 +264,12 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
     saddr.can_addr.j1939.addr = 0;
 
     do {
-        string pgnMessage = pEcuScript_->getJ1939PGN(pgn);
+        J1939PGNData pgnData = pEcuScript_->getJ1939PGNData(pgn);
+        string pgnMessage = pgnData.payload;
+        unsigned int cycleTime = pgnData.cycleTime;
+        if(cycleTime == 0) {
+            return;
+        }
         vector<unsigned char> rawMessage = pEcuScript_->literalHexStrToBytes(pgnMessage);
 
         if(sendto(receive_skt_, rawMessage.data(), rawMessage.size(), 0, (const struct sockaddr *)&saddr, sizeof(saddr)) < 0)
@@ -273,7 +278,7 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
         }
         cout << "PGN sent: " << pgn << endl;
 
-        usleep(1000 * 1000); // takes microseconds
+        usleep(1000 * cycleTime); // takes microseconds
 
     } while (!isOnExit_);
 }

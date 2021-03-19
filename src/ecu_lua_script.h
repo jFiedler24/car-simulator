@@ -23,7 +23,14 @@ constexpr char RAW_TABLE[] = "Raw";
 constexpr char J1939_SOURCE_ADDRESS_FIELD[] = "J1939SourceAddress";
 constexpr char J1939_PGN_TABLE[] = "PGNs";
 constexpr char J1939_PGN_PAYLOAD[] = "payload";
+constexpr char J1939_PGN_CYCLETIME[] = "cycleTime";
 constexpr uint32_t DEFAULT_BROADCAST_ADDR = 0x7DF;
+
+struct J1939PGNData
+{
+    unsigned int cycleTime;
+    std::string payload;
+};
 
 class EcuLuaScript
 {
@@ -50,7 +57,7 @@ public:
     std::string getDataByIdentifier(const std::string& identifier, const std::string& session);
     std::vector<std::string> getRawRequests();
     std::vector<std::string> getJ1939PGNs();
-    std::string getJ1939PGN(const std::string& pgn);
+    J1939PGNData getJ1939PGNData(const std::string& pgn);
 
     std::string getRaw(const std::string& identStr);
     bool hasRaw(const std::string& identStr);
