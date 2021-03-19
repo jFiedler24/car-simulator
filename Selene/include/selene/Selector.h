@@ -387,6 +387,10 @@ public:
         return vec;
     }
 
+    std::string toString() const {
+        return *this;
+    }
+
     // Chaining operators. If the selector is an rvalue, modify in
     // place. Otherwise, create a new Selector and return it.
 #ifdef HAS_REF_QUALIFIERS

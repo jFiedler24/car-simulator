@@ -511,9 +511,12 @@ vector<string> EcuLuaScript::getJ1939PGNs()
     }
 }
 
-string EcuLuaScript::getJ1939PGN(const string& pgn)
+J1939PGNData EcuLuaScript::getJ1939PGNData(const string& pgn)
 {
     const std::lock_guard<std::mutex> lock(luaLock_);
+
+    J1939PGNData pgnData;
+    pgnData.cycleTime = 0;
 
     cout << "Looking for PGN: " << pgn << endl;
     auto val = lua_state_[ecu_ident_.c_str()][J1939_PGN_TABLE][pgn.c_str()];
@@ -522,23 +525,35 @@ string EcuLuaScript::getJ1939PGN(const string& pgn)
         cout << "Found PGN: " << pgn << endl;
         if (val.isFunction())
         {
-            return val(pgn);
+            pgnData.payload = val(pgn).toString();
         }
         else if(val.isTable())
         {
-            return val[J1939_PGN_PAYLOAD];
+            auto pgnPayload = val[J1939_PGN_PAYLOAD];
+            auto pgnCycleTime = val[J1939_PGN_CYCLETIME];
+            if(pgnCycleTime.exists() == true) {
+                pgnData.cycleTime = pgnCycleTime;
+            }
+            if(pgnPayload.exists() == true) {
+                if(pgnPayload.isFunction())
+                {
+                    pgnData.payload = pgnPayload(pgn).toString();
+                }
+                else
+                {
+                    pgnData.payload = pgnPayload.toString();
+                }
+            }
         }
         else
         {
-            //cout << "PGN Value: " << pgn << " -> " << val << endl;
-            cout << "Returning PGN value" << endl;
-            return val; // will be cast into string
+            pgnData.payload = val.toString(); // will be cast into string
         } 
     } else {
         cerr << "Unknown PGN: " << pgn << endl;
-        return "";
     }
-    // TODO: Evaluate functions
+
+    return pgnData;
 }
 
 /**
