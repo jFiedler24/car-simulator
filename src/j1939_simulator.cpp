@@ -125,6 +125,8 @@ int J1939Simulator::openReceiver() noexcept
     strncpy(ifr.ifr_name, device_.c_str(), device_.length() + 1);
     ioctl(skt, SIOCGIFINDEX, &ifr);
     addr.can_ifindex = ifr.ifr_ifindex;
+    int value = 1;
+    setsockopt(skt, SOL_SOCKET, SO_BROADCAST, &value, sizeof(value));
 
     auto bind_res = bind(skt,
                          reinterpret_cast<struct sockaddr*> (&addr),
@@ -262,7 +264,7 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
     saddr.can_family = AF_CAN;
     saddr.can_addr.j1939.name = J1939_NO_NAME;
     saddr.can_addr.j1939.pgn = pgnNum;
-    saddr.can_addr.j1939.addr = 0;
+    saddr.can_addr.j1939.addr = 0xff;
 
     do {
         J1939PGNData pgnData = pEcuScript_->getJ1939PGNData(pgn);
@@ -311,7 +313,6 @@ uint32_t J1939Simulator::parsePGN(string pgn) const noexcept
             for(int i = pgnBytes.size()-1; i >= 0; i--) {
                 pgnNum = pgnNum << 8;
                 pgnNum |= pgnBytes[i] & 0xffu;
-                cout << "Building " << pgn << ": adding " << hex << (uint32_t)pgnBytes[i] << " -> " << dec << pgnNum << endl;
             }
         }
     }
