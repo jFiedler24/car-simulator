@@ -254,6 +254,7 @@ vector<uint8_t> EcuLuaScript::literalHexStrToBytes(const string& hexString)
         byte = static_cast<uint8_t> (strtol(byteString.c_str(), NULL, 16));
         data.push_back(byte);
     }
+    cout << endl;
     return data;
 }
 

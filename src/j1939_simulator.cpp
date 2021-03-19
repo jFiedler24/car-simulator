@@ -255,12 +255,13 @@ void J1939Simulator::sendVIN(const uint8_t targetAddress) noexcept
 
 void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
 {
-    cout << "Sending Cyclic PGN: " << pgn << endl;
+    uint32_t pgnNum = parsePGN(pgn);
+    cout << "Sending Cyclic PGN: " << pgn << " as " << pgnNum << endl;
 
     struct sockaddr_can saddr = {};
     saddr.can_family = AF_CAN;
     saddr.can_addr.j1939.name = J1939_NO_NAME;
-    saddr.can_addr.j1939.pgn = strtol(pgn.c_str(), NULL, 10);
+    saddr.can_addr.j1939.pgn = pgnNum;
     saddr.can_addr.j1939.addr = 0;
 
     do {
@@ -281,4 +282,39 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
         usleep(1000 * cycleTime); // takes microseconds
 
     } while (!isOnExit_);
+}
+
+/**
+ * @brief convert a PGN  specified in the lua file to an integer
+ * This tries to determine which of the valid styles of defining a PGN
+ * is used and tries to convert it into an integer.
+ * Valid formats are: "65226" (decimal), "CA FE 00" (little endian hex) or even "CAFE00".
+ * 
+ * Note that this does not work properly for the last syntax.
+ * Specifying "011100" is abiguous and would be interpreted as decimal number.
+ * Numbers that have more than 5 digits are always in little endian hex
+ * 
+ * @param pgn 
+ * @return * this 
+ */
+uint32_t J1939Simulator::parsePGN(string pgn) const noexcept
+{
+    // try to parse the number
+    uint32_t pgnNum = strtol(pgn.c_str(), NULL, 10);
+
+    if(pgnNum == 0 || pgnNum > 99999) {
+        // if this fails try parsing a string instead
+        vector<uint8_t> pgnBytes = pEcuScript_->literalHexStrToBytes(pgn);
+        pgnNum = 0;
+        if(pgnBytes.size() <= 3) {
+            // put byte together in reverse order (little endian)
+            for(int i = pgnBytes.size()-1; i >= 0; i--) {
+                pgnNum = pgnNum << 8;
+                pgnNum |= pgnBytes[i] & 0xffu;
+                cout << "Building " << pgn << ": adding " << hex << (uint32_t)pgnBytes[i] << " -> " << dec << pgnNum << endl;
+            }
+        }
+    }
+
+    return pgnNum;
 }
