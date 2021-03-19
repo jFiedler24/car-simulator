@@ -47,6 +47,9 @@ private:
 
     sel::State lua_state_;
     uint16_t *pgns_;
+
+    uint32_t parsePGN(std::string pgn) const noexcept;
+
 };
 
 #endif // J1939_SIMULATOR_H
