@@ -9,9 +9,9 @@ CANINTERFACE=$1
 
 while true
 do
-    if [ "$(ip -details link show $CANINTERFACE | grep ERROR-WARNING)" != "" ]
+    if [ "$(ip -details link show $CANINTERFACE | grep -e 'ERROR-WARNING\|ERROR-PASSIVE')" != "" ]
     then
-        echo "Interface $CANINTERFACE is in ERROR-WARNING state - restarting interface"
+        echo "Interface $CANINTERFACE is in ERROR-WARNING or ERROR-PASSIVE state - restarting interface"
         ifconfig $CANINTERFACE down
         ifconfig $CANINTERFACE up
     fi
