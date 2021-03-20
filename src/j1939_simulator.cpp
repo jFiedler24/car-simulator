@@ -143,6 +143,48 @@ int J1939Simulator::openReceiver() noexcept
 }
 
 /**
+ * Opens a socket to send a J1939 PGN
+ *
+ * @return socket
+ */
+int J1939Simulator::openBroadcastSocket() const noexcept
+{
+    // see also: https://www.kernel.org/doc/html/latest/networking/j1939.html
+    struct sockaddr_can addr;
+    addr.can_family = AF_CAN;
+
+    addr.can_addr.j1939.pgn = J1939_NO_PGN; // Receive all PGNs
+    addr.can_addr.j1939.name = J1939_NO_NAME; // Don't do name lookups
+    addr.can_addr.j1939.addr = source_address_; // source address
+
+    int skt = socket(PF_CAN, SOCK_DGRAM, CAN_J1939);
+    if (skt < 0)
+    {
+        cerr << __func__ << "() socket: " << strerror(errno) << '\n';
+        return -1;
+    }
+
+    struct ifreq ifr;
+    strncpy(ifr.ifr_name, device_.c_str(), device_.length() + 1);
+    ioctl(skt, SIOCGIFINDEX, &ifr);
+    addr.can_ifindex = ifr.ifr_ifindex;
+    int value = 1;
+    setsockopt(skt, SOL_SOCKET, SO_BROADCAST, &value, sizeof(value));
+
+    auto bind_res = bind(skt,
+                         reinterpret_cast<struct sockaddr*> (&addr),
+                         sizeof(addr));
+    if (bind_res < 0)
+    {
+        cerr << __func__ << "() bind: " << strerror(errno) << '\n';
+        close(skt);
+        return -2;
+    }
+
+    return skt;
+}
+
+/**
  * Closes the socket for receiving data.
  * 
  * @see J1939Simulator::openReceiver()
@@ -275,10 +317,14 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
         }
         vector<unsigned char> rawMessage = pEcuScript_->literalHexStrToBytes(pgnMessage);
 
-        if(sendto(receive_skt_, rawMessage.data(), rawMessage.size(), 0, (const struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+        int sendSkt = openBroadcastSocket();
+
+        if(sendto(sendSkt, rawMessage.data(), rawMessage.size(), 0, (const struct sockaddr *)&saddr, sizeof(saddr)) < 0)
         {
             cout << "Error sending PGN: " << strerror(errno) << endl;
         }
+        close(sendSkt);
+
         cout << "PGN sent: " << pgn << endl;
 
         usleep(1000 * cycleTime); // takes microseconds

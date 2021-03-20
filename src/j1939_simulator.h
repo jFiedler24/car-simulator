@@ -48,6 +48,7 @@ private:
     sel::State lua_state_;
     uint16_t *pgns_;
 
+    int openBroadcastSocket() const noexcept;
     uint32_t parsePGN(std::string pgn) const noexcept;
 
 };
