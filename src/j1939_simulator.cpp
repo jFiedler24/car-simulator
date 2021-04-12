@@ -324,8 +324,11 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
  */
 uint32_t J1939Simulator::parsePGN(string pgn) const noexcept
 {
-    // try to parse the number
-    uint32_t pgnNum = strtol(pgn.c_str(), NULL, 10);
+    uint32_t pgnNum = 0;
+    // try to parse the number as decimal if the string is not more than 5 digits long
+    if(strnlen(pgn.c_str(),6) < 6) {
+        pgnNum = strtol(pgn.c_str(), NULL, 10);
+    }
 
     if(pgnNum == 0 || pgnNum > 99999) {
         // if this fails try parsing a string instead
