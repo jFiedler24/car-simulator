@@ -91,6 +91,8 @@ UdsReceiver& UdsReceiver::operator=(UdsReceiver&& orig) noexcept
  */
 void UdsReceiver::proceedReceivedData(const uint8_t* buffer, const size_t num_bytes) noexcept
 {
+    IsoTpReceiver::proceedReceivedData(buffer, num_bytes);
+
     const uint8_t udsServiceIdentifier = buffer[0];
     const string identifier = intToHexString(buffer, num_bytes);
     const bool isRaw = pEcuScript_->hasRaw(identifier);
@@ -98,6 +100,7 @@ void UdsReceiver::proceedReceivedData(const uint8_t* buffer, const size_t num_by
     if (isRaw)
     {
         vector<unsigned char> raw = pEcuScript_->literalHexStrToBytes(pEcuScript_->getRaw(identifier));
+        cout << "UDS sending: " << dec << raw.size() << " bytes." << endl;
         pIsoTpSender_->sendData(raw.data(), raw.size());
         pSessionCtrl_->reset();
     }
