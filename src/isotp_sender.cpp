@@ -142,13 +142,20 @@ int IsoTpSender::sendData(const void* buffer, size_t size) const noexcept
         return -1;
     }
 
-    auto bytes_sent = write(send_skt_, buffer, size);
-    if (bytes_sent < 0)
+    int bytes_sent = 0;
+    int retries = 5;
+    while(retries > 0)
     {
-        cerr << __func__ << "() write: " << strerror(errno) << '\n';
-        return -2;
+        bytes_sent = write(send_skt_, buffer, size);
+        if (bytes_sent < 0)
+        {
+            cerr << __func__ << "() write: " << strerror(errno) << '\n';
+            retries--;
+            usleep(1000*5); // wait 5ms before retry
+        } else {
+            retries = 0;
+        }
     }
 
     return bytes_sent;
 }
-
