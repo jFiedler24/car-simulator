@@ -50,6 +50,7 @@ private:
 
     int openBroadcastSocket() const noexcept;
     uint32_t parsePGN(std::string pgn) const noexcept;
+    bool isBusActive();
 
 };
 

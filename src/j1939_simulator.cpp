@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include <libsocketcan.h>
 
 
 #include <net/if.h>
@@ -266,47 +267,66 @@ void J1939Simulator::sendCyclicMessage(const string pgn) noexcept
     saddr.can_addr.j1939.pgn = pgnNum;
     saddr.can_addr.j1939.addr = 0xff;
 
+
     do {
         J1939PGNData pgnData = pEcuScript_->getJ1939PGNData(pgn);
         string pgnMessage = pgnData.payload;
+        vector<unsigned char> rawMessage = pEcuScript_->literalHexStrToBytes(pgnMessage);
         unsigned int cycleTime = pgnData.cycleTime;
         if(cycleTime == 0) {
             return;
         }
-        vector<unsigned char> rawMessage = pEcuScript_->literalHexStrToBytes(pgnMessage);
 
-        int sendSkt = openBroadcastSocket();
+        if(isBusActive()) {
+            int sendSkt = openBroadcastSocket();
 
-        int retries = 5;
-        while(retries > 0)
-        {
-            cout << "Trying to send PGN: " << dec << pgnNum << endl;
-            int sendResult = sendto(sendSkt, rawMessage.data(), rawMessage.size(), MSG_DONTWAIT, (const struct sockaddr *)&saddr, sizeof(saddr));
-            if(sendResult < 0)
+            int retries = 5;
+            while(retries > 0)
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                cout << "Trying to send PGN: " << dec << pgnNum << endl;
+
+                int sendResult = sendto(sendSkt, rawMessage.data(), rawMessage.size(), MSG_DONTWAIT, (const struct sockaddr *)&saddr, sizeof(saddr));
+                if(sendResult < 0)
                 {
-                    retries--;
-                    cout << "Sending PGN " << dec << pgnNum << " blocked - " << retries << " retries remaining." << endl;
-                    usleep(1000 * 50); // wait for 50ms before retry
-                } else {
-                    cout << "Error sending PGN: " << strerror(errno) << endl;
+                    if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    {
+                        retries--;
+                        cout << "Sending PGN " << dec << pgnNum << " blocked - " << retries << " retries remaining." << endl;
+                        usleep(1000 * 50); // wait for 50ms before retry
+                    } else {
+                        cout << "Error sending PGN: " << strerror(errno) << endl;
+                        retries = 0;
+                    }
+                }
+                else
+                {
                     retries = 0;
                 }
             }
-            else
-            {
-                retries = 0;
-            }
+
+            close(sendSkt);
+
+            cout << "PGN sent: " << pgn << endl;
+
         }
-
-        close(sendSkt);
-
-        cout << "PGN sent: " << pgn << endl;
 
         usleep(1000 * cycleTime); // takes microseconds
 
     } while (!isOnExit_);
+}
+
+bool J1939Simulator::isBusActive()
+{
+    int state;
+    if(can_get_state(this->device_.c_str(), &state) < 0) {
+        cerr << "Unable to get status for " << this->device_ << " assuming state OFF" << endl;
+        return false;
+    }
+
+    if(state == CAN_STATE_ERROR_ACTIVE || state == CAN_STATE_ERROR_WARNING) {
+        return true;
+    }
+    return false;
 }
 
 /**
