@@ -13,6 +13,7 @@
 #include <string>
 #include <thread>
 #include <signal.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -25,7 +26,7 @@ void start_server(const string &config_file, const string &device)
     cout << "start_server for config file: " << config_file
          << " on device: " << device << endl;
 
-    EcuLuaScript *script = new EcuLuaScript("Main", LUA_CONFIG_PATH + config_file);
+    EcuLuaScript *script = new EcuLuaScript("Main", config_file);
 
     ElectronicControlUnit *udsSimulator = NULL;
     J1939Simulator *j1939Simulator = NULL;
@@ -80,7 +81,9 @@ int main(int argc, char** argv)
     
     // listen to this communication with `isotpsniffer -s 100 -d 200 -c -td vcan0`
 
-    vector<string> config_files = utils::getConfigFilenames(LUA_CONFIG_PATH);
+    chdir(LUA_CONFIG_PATH);
+
+    vector<string> config_files = utils::getConfigFilenames(".");
     vector<thread> threads;
 
     signal(SIGINT, signalHandler);
