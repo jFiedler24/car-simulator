@@ -85,7 +85,6 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
             return;
         }
     }
-    throw invalid_argument("No, or invalid Lua script!");
 }
 
 /**
