@@ -18,6 +18,8 @@ using namespace std;
 
 constexpr size_t MAX_UDS_MSG_SIZE = 4096; ///< max. 4096 bytes per UDS message
 
+#define NUM_SEND_RETRIES 5
+
 /**
  * Constructor. Opens the sender socket.
  * 
@@ -143,7 +145,7 @@ int IsoTpSender::sendData(const void* buffer, size_t size) const noexcept
     }
 
     int bytes_sent = 0;
-    int retries = 5;
+    int retries = NUM_SEND_RETRIES;
     while(retries > 0)
     {
         bytes_sent = write(send_skt_, buffer, size);

@@ -12,8 +12,8 @@
 #include "utilities.h"
 #include <string>
 #include <thread>
-#include <signal.h>
-#include <stdio.h>
+#include <csignal>
+#include <cstdio>
 
 using namespace std;
 

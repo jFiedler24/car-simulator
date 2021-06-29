@@ -350,8 +350,8 @@ uint32_t J1939Simulator::parsePGN(string pgn) const noexcept
         pgnNum = strtol(pgn.c_str(), NULL, 10);
     }
 
+    // If number parsing fails or number is longer than 5 digits, try parsing a string instead
     if(pgnNum == 0 || pgnNum > 99999) {
-        // if this fails try parsing a string instead
         vector<uint8_t> pgnBytes = pEcuScript_->literalHexStrToBytes(pgn);
         pgnNum = 0;
         if(pgnBytes.size() <= 3) {
@@ -395,19 +395,6 @@ int J1939Simulator::openBroadcastSocket() const noexcept
     int value = 1;
     setsockopt(skt, SOL_SOCKET, SO_BROADCAST, &value, sizeof(value));
 
-/*    int sockFlags = fnctl(skt, F_GETFL);
-    if(sockFlags < 0)
-    {
-        cerr << __func__ << "() get socket flags: " << strerror(errno) << endl;
-        return -1;
-    }
-    int ret = fnctl(skt, F_SETFL, sockFlags | O_NONBLOCK);
-    if(ret < 0)
-    {
-        cerr << __func__ << "() set socket flags: " << strerror(errno) << endl;
-        return -1;
-    }
-*/
     auto bind_res = bind(skt,
                          reinterpret_cast<struct sockaddr*> (&addr),
                          sizeof(addr));
