@@ -14,6 +14,7 @@
 #include <thread>
 #include <csignal>
 #include <cstdio>
+#include <filesystem>
 
 using namespace std;
 
@@ -81,7 +82,7 @@ int main(int argc, char** argv)
     
     // listen to this communication with `isotpsniffer -s 100 -d 200 -c -td vcan0`
 
-    chdir(LUA_CONFIG_PATH);
+    filesystem::current_path(filesystem::path(LUA_CONFIG_PATH));
 
     vector<string> config_files = utils::getConfigFilenames(".");
     vector<thread> threads;
