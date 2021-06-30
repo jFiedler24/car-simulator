@@ -38,13 +38,14 @@ EcuLuaScript::EcuLuaScript(const string& ecuIdent, const string& luaScript)
     if (utils::existsFile(luaScript))
     {
         // inject the C++ functions into the Lua script
-        lua_state_["ascii"] = &ascii;
-        lua_state_["getCounterByte"] = &getCounterByte;
-        lua_state_["getDataBytes"] = &getDataBytes;
-        lua_state_["createHash"] = &createHash;
-        lua_state_["toByteResponse"] = &toByteResponse;
-        lua_state_["sleep"] = &sleep;
-        // some lambda magic for the member functions 
+        // static functions
+        lua_state_["ascii"] = [](const string& utf8_str) -> string { return ascii(utf8_str); };
+        lua_state_["getCounterByte"] = [](const string& msg) -> string { return getCounterByte(msg); };
+        lua_state_["getDataBytes"] = [](const string& msg) { return getDataBytes(msg); };
+        lua_state_["createHash"] = []() -> string { return createHash(); };
+        lua_state_["toByteResponse"] = [](uint32_t value, uint32_t len = sizeof(uint32_t)) -> string { return toByteResponse(value, len); };
+        lua_state_["sleep"] = [](unsigned int ms) { return sleep(ms); };
+        // member functions
         lua_state_["getCurrentSession"] = [this]() -> uint32_t { return this->getCurrentSession(); }; 
         lua_state_["switchToSession"] = [this](uint32_t ses) { this->switchToSession(ses); };
         lua_state_["sendRaw"] = [this](const string& msg) { this->sendRaw(msg); };
