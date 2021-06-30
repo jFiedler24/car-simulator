@@ -83,7 +83,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=`pkg-config --libs lua5.2`  `pkg-config --libs libsocketcan`  
+LDLIBSOPTIONS=`pkg-config --libs lua5.2`  `pkg-config --libs libsocketcan`  -lstdc++fs
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
