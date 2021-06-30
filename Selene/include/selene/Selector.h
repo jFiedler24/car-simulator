@@ -166,7 +166,7 @@ public:
             ResetStackOnScopeExit save(_state);
             _traverse();
             _get();
-            if (std::uncaught_exception())
+            if (std::uncaught_exceptions() > 0)
             {
                 try {
                     _evaluate_function_call(0);
