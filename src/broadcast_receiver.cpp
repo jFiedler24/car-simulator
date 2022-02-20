@@ -34,6 +34,7 @@ void BroadcastReceiver::proceedReceivedData(const uint8_t* buffer,
         {
             if(buffer[1] != 0x80)
             {
+               pUdsReceiver_->pSessionCtrl_->reset();
                 // -> beware of arrows ->
                 constexpr array<uint8_t, 1> tp = {TESTER_PRESENT_RES};
                 pUdsReceiver_->pIsoTpSender_->sendData(tp.data(), tp.size());
