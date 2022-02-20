@@ -32,7 +32,7 @@ void BroadcastReceiver::proceedReceivedData(const uint8_t* buffer,
     {
         case TESTER_PRESENT_REQ:
         {
-            if(buffer[1] == 0x80 && num_bytes >= 2)
+            if(buffer[0] == 0x3E && num_bytes >= 2)
             {
                 pUdsReceiver_->pSessionCtrl_->reset();
             }
