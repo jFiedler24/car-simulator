@@ -32,14 +32,9 @@ void BroadcastReceiver::proceedReceivedData(const uint8_t* buffer,
     {
         case TESTER_PRESENT_REQ:
         {
-            if(buffer[0] == 0x3E && num_bytes >= 2)
-            {
-                pUdsReceiver_->pSessionCtrl_->reset();
-            }
-            else
+            if(buffer[1] != 0x80)
             {
                 // -> beware of arrows ->
-                pUdsReceiver_->pSessionCtrl_->reset();
                 constexpr array<uint8_t, 1> tp = {TESTER_PRESENT_RES};
                 pUdsReceiver_->pIsoTpSender_->sendData(tp.data(), tp.size());
             }
