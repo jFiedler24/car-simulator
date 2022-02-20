@@ -91,6 +91,7 @@ UdsReceiver& UdsReceiver::operator=(UdsReceiver&& orig) noexcept
  */
 void UdsReceiver::proceedReceivedData(const uint8_t* buffer, const size_t num_bytes) noexcept
 {
+    pSessionCtrl_->reset(); //reset on any incoming uds request
     IsoTpReceiver::proceedReceivedData(buffer, num_bytes);
 
     const uint8_t udsServiceIdentifier = buffer[0];
